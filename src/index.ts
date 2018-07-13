@@ -1,7 +1,7 @@
-import Vue, { VueConstructor, VNode, AsyncComponent } from 'vue'
+import Vue, { VueConstructor, VNode, Component, AsyncComponent } from 'vue'
 
 export function createRouterLayout(
-  resolve: (layoutName: string) => AsyncComponent
+  resolve: (layoutName: string) => Promise<Component | { default: Component }>
 ): VueConstructor {
   return Vue.extend({
     name: 'RouterLayout',
@@ -36,7 +36,7 @@ export function createRouterLayout(
         vm.layoutName = layoutName
 
         if (!vm.layouts[layoutName]) {
-          vm.$set(vm.layouts, layoutName, resolve(layoutName))
+          vm.$set(vm.layouts, layoutName, () => resolve(layoutName))
         }
       })
     },

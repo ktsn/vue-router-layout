@@ -23,7 +23,7 @@ const layouts: Record<string, Component> = {
 }
 
 const RouterLayout = createRouterLayout(layout => {
-  return () => Promise.resolve(layouts[layout])
+  return Promise.resolve(layouts[layout])
 })
 
 async function mount(children: RouteConfig[]) {
