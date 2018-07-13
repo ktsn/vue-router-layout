@@ -19,8 +19,12 @@ const baseConfig = {
   input: 'lib/index.js',
   output: {
     name: capitalize(pkg.name),
-    banner
+    banner,
+    globals: {
+      vue: 'Vue'
+    }
   },
+  external: ['vue'],
   plugins: []
 }
 
