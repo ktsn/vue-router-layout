@@ -1,7 +1,7 @@
 import { mount as _mount } from '@vue/test-utils'
 import Vue, { Component } from 'vue'
 import Router, { RouteConfig } from 'vue-router'
-import { createLayoutSelector } from '../src/index'
+import { createRouterLayout } from '../src/index'
 
 Vue.config.productionTip = false
 Vue.config.devtools = false
@@ -22,7 +22,7 @@ const layouts: Record<string, Component> = {
   }
 }
 
-const LayoutSelector = createLayoutSelector(layout => {
+const RouterLayout = createRouterLayout(layout => {
   return () => Promise.resolve(layouts[layout])
 })
 
@@ -31,7 +31,7 @@ async function mount(children: RouteConfig[]) {
     routes: [
       {
         path: '/',
-        component: LayoutSelector,
+        component: RouterLayout,
         children
       }
     ]
@@ -48,7 +48,7 @@ async function mount(children: RouteConfig[]) {
   return wrapper
 }
 
-describe('LayoutSelector component', () => {
+describe('RouterLayout component', () => {
   it('shows default layout', async () => {
     const Comp = {
       template: '<p>component</p>'

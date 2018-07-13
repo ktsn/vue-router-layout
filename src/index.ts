@@ -1,10 +1,10 @@
 import Vue, { VueConstructor, VNode, AsyncComponent } from 'vue'
 
-export function createLayoutSelector(
+export function createRouterLayout(
   resolve: (layoutName: string) => AsyncComponent
 ): VueConstructor {
   return Vue.extend({
-    name: 'LayoutSelector',
+    name: 'RouterLayout',
 
     data() {
       return {
