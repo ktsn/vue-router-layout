@@ -2,8 +2,14 @@
   "name": "vue-router-layout",
   "version": "0.0.0",
   "author": "katashin",
-  "description": "",
-  "keywords": [],
+  "description": "Lightweight layout selector for Vue Router",
+  "keywords": [
+    "Vue",
+    "Vue Router",
+    "routing",
+    "layout",
+    "dynamic imports"
+  ],
   "license": "MIT",
   "main": "dist/vue-router-layout.cjs.js",
   "module": "lib/index.js",
