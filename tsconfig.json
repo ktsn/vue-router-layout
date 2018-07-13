@@ -8,7 +8,9 @@
       "es2015",
       "dom"
     ],
-    "strict": true
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": [
     "src/**/*.ts",

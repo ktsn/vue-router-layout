@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LayoutSelector component shows default layout 1`] = `"<div>Default <p>component</p></div>"`;
+
+exports[`LayoutSelector component shows named layout 1`] = `"<div>Foo <p>component</p></div>"`;
+
+exports[`LayoutSelector component uses the leaf component's layout option 1`] = `"<div>Bar <div>Test1 <p>Test2</p></div></div>"`;
