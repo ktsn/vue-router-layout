@@ -1,6 +1,12 @@
 import Vue, { VueConstructor, VNode, Component, AsyncComponent } from 'vue'
 import { RouteRecord } from 'vue-router'
 
+/**
+ * Find which layout the component should render.
+ * It traverses `layout` option from the leaf component to root,
+ * and returns the first matched one.
+ * If there are no maching, `default` is used.
+ */
 function findLayoutName(matched: RouteRecord[]): string {
   const reversed = matched.slice().reverse()
 
@@ -8,10 +14,8 @@ function findLayoutName(matched: RouteRecord[]): string {
   for (const record of reversed) {
     const Component: any = record.components.default
     if (Component) {
-      const name =
-        typeof Component === 'function'
-          ? Component.options.layout
-          : Component.layout
+      const isCtor = typeof Component === 'function' && Component.options
+      const name = isCtor ? Component.options.layout : Component.layout
 
       if (name) {
         layoutName = name

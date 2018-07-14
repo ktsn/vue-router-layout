@@ -28,6 +28,7 @@ const RouterLayout = createRouterLayout(layout => {
 
 async function mount(children: RouteConfig[]) {
   const router = new Router({
+    mode: 'abstract',
     routes: [
       {
         path: '/',
@@ -44,6 +45,7 @@ async function mount(children: RouteConfig[]) {
   const wrapper = _mount(Root, {
     router
   })
+  router.push('/')
   await wrapper.vm.$nextTick()
   return wrapper
 }
@@ -128,5 +130,68 @@ describe('RouterLayout component', () => {
     wrapper.vm.$router.push('/test')
     await wrapper.vm.$nextTick()
     expect(wrapper.html()).toMatchSnapshot()
+  })
+
+  it('works with component constructor', async () => {
+    const Test1 = Vue.extend({
+      layout: 'foo',
+      template: '<p>Test1</p>'
+    })
+
+    const Test2 = Vue.extend({
+      template: '<p>Test2</p>'
+    })
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Test1
+      },
+      {
+        path: 'test',
+        component: Test2
+      }
+    ])
+    expect(wrapper.html()).toMatchSnapshot()
+    wrapper.vm.$router.push('/test')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.html()).toMatchSnapshot()
+  })
+
+  it('works with async component', async done => {
+    const Test1 = () => {
+      return Promise.resolve({
+        layout: 'foo',
+        template: '<p>Test1</p>'
+      })
+    }
+
+    const Test2 = () => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            template: '<p>Test2</p>'
+          })
+        }, 100)
+      })
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Test1
+      },
+      {
+        path: 'test',
+        component: Test2
+      }
+    ])
+    expect(wrapper.html()).toMatchSnapshot()
+    wrapper.vm.$router.push('/test')
+
+    setTimeout(() => {
+      expect(wrapper.html()).toMatchSnapshot()
+      done()
+    }, 200)
   })
 })
