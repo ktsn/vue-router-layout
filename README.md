@@ -2,6 +2,8 @@
 
 Lightweight layout resolver for Vue Router.
 
+You may want to use [vue-cli-plugin-auto-routing](https://github.com/ktsn/vue-cli-plugin-auto-routing) which includes all useful features on routing.
+
 ## Installation
 
 ```bash
@@ -91,6 +93,13 @@ The following html will be rendered when you access `/` route:
   <p>index.vue</p>
 </div>
 ```
+
+## Related Projects
+
+* [vue-cli-plugin-auto-routing](https://github.com/ktsn/vue-cli-plugin-auto-routing): Vue CLI plugin including auto pages and layouts resolution.
+* [vue-auto-routing](https://github.com/ktsn/vue-auto-routing): Generate Vue Router routing automatically.
+* [vue-route-generator](https://github.com/ktsn/vue-route-generator): Low-level utility generating routing (used by vue-auto-routing under the hood).
+
 
 ## License
 
