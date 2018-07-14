@@ -4,4 +4,6 @@ exports[`RouterLayout component shows default layout 1`] = `"<div>Default <p>com
 
 exports[`RouterLayout component shows named layout 1`] = `"<div>Foo <p>component</p></div>"`;
 
+exports[`RouterLayout component updates layout when route is changed 1`] = `"<div>Bar <p>Test2</p></div>"`;
+
 exports[`RouterLayout component uses the leaf component's layout option 1`] = `"<div>Bar <div>Test1 <p>Test2</p></div></div>"`;

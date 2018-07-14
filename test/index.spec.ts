@@ -103,4 +103,30 @@ describe('RouterLayout component', () => {
     ])
     expect(wrapper.html()).toMatchSnapshot()
   })
+
+  it('updates layout when route is changed', async () => {
+    const Test1 = {
+      layout: 'foo',
+      template: '<p>Test1</p>'
+    }
+
+    const Test2 = {
+      layout: 'bar',
+      template: '<p>Test2</p>'
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Test1
+      },
+      {
+        path: 'test',
+        component: Test2
+      }
+    ])
+    wrapper.vm.$router.push('/test')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.html()).toMatchSnapshot()
+  })
 })

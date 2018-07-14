@@ -1,4 +1,27 @@
 import Vue, { VueConstructor, VNode, Component, AsyncComponent } from 'vue'
+import { RouteRecord } from 'vue-router'
+
+function findLayoutName(matched: RouteRecord[]): string {
+  const reversed = matched.slice().reverse()
+
+  let layoutName = 'default'
+  for (const record of reversed) {
+    const Component: any = record.components.default
+    if (Component) {
+      const name =
+        typeof Component === 'function'
+          ? Component.options.layout
+          : Component.layout
+
+      if (name) {
+        layoutName = name
+        break
+      }
+    }
+  }
+
+  return layoutName
+}
 
 export function createRouterLayout(
   resolve: (layoutName: string) => Promise<Component | { default: Component }>
@@ -13,32 +36,23 @@ export function createRouterLayout(
       }
     },
 
-    beforeRouteEnter(to, _from, next) {
-      const reversed = to.matched.slice().reverse()
-
-      let layoutName = 'default'
-      for (const record of reversed) {
-        const Component: any = record.components.default
-        if (Component) {
-          const name =
-            typeof Component === 'function'
-              ? Component.options.layout
-              : Component.layout
-
-          if (name) {
-            layoutName = name
-            break
-          }
+    watch: {
+      layoutName(name) {
+        if (!this.layouts[name]) {
+          this.$set(this.layouts, name, () => resolve(name))
         }
       }
+    },
 
+    beforeRouteEnter(to, _from, next) {
       next((vm: any) => {
-        vm.layoutName = layoutName
-
-        if (!vm.layouts[layoutName]) {
-          vm.$set(vm.layouts, layoutName, () => resolve(layoutName))
-        }
+        vm.layoutName = findLayoutName(to.matched)
       })
+    },
+
+    beforeRouteUpdate(to, _from, next) {
+      this.layoutName = findLayoutName(to.matched)
+      next()
     },
 
     render(h): VNode {
