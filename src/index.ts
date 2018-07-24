@@ -3,28 +3,30 @@ import { RouteRecord } from 'vue-router'
 
 /**
  * Find which layout the component should render.
- * It traverses `layout` option from the leaf component to root,
- * and returns the first matched one.
- * If there are no maching, `default` is used.
+ * If the component is not specified layout name, `default` is used.
+ * Otherwise return undefined.
  */
-function findLayoutName(matched: RouteRecord[]): string {
-  const reversed = matched.slice().reverse()
-
-  let layoutName = 'default'
-  for (const record of reversed) {
-    const Component: any = record.components.default
-    if (Component) {
-      const isCtor = typeof Component === 'function' && Component.options
-      const name = isCtor ? Component.options.layout : Component.layout
-
-      if (name) {
-        layoutName = name
-        break
-      }
-    }
+function resolveLayoutName(matched: RouteRecord[]): string | undefined {
+  const defaultName = 'default'
+  const last = matched[matched.length - 1]
+  if (!last) {
+    return
   }
 
-  return layoutName
+  const Component: any = last.components.default
+  if (!Component) {
+    return
+  }
+
+  const isAsync = typeof Component === 'function' && !Component.options
+  if (isAsync) {
+    return
+  }
+
+  const isCtor = typeof Component === 'function' && Component.options
+  const layoutName = isCtor ? Component.options.layout : Component.layout
+
+  return layoutName || defaultName
 }
 
 export function createRouterLayout(
@@ -52,19 +54,19 @@ export function createRouterLayout(
       return {
         $_routerLayout_notifyUpdate: () => {
           const matched = this.$route.matched
-          this.layoutName = findLayoutName(matched)
+          this.layoutName = resolveLayoutName(matched) || this.layoutName
         }
       }
     },
 
     beforeRouteEnter(to, _from, next) {
       next((vm: any) => {
-        vm.layoutName = findLayoutName(to.matched)
+        vm.layoutName = resolveLayoutName(to.matched) || this.layoutName
       })
     },
 
     beforeRouteUpdate(to, _from, next) {
-      this.layoutName = findLayoutName(to.matched)
+      this.layoutName = resolveLayoutName(to.matched) || this.layoutName
       next()
     },
 

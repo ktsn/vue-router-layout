@@ -187,10 +187,18 @@ describe('RouterLayout component', () => {
         component: Test2
       }
     ])
+
+    // Foo - Test1
     expect(wrapper.html()).toMatchSnapshot()
+
     wrapper.vm.$router.push('/test')
 
+    // Foo - Test1 (Should not change layout until the async component is resolved)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.html()).toMatchSnapshot()
+
     setTimeout(() => {
+      // Bar - Test2 (Should update layout after async component is resolved)
       expect(wrapper.html()).toMatchSnapshot()
       done()
     }, 200)
