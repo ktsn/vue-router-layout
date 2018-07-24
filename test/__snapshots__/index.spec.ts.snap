@@ -10,7 +10,7 @@ exports[`RouterLayout component uses the leaf component's layout option 1`] = `"
 
 exports[`RouterLayout component works with async component 1`] = `"<div>Foo <p>Test1</p></div>"`;
 
-exports[`RouterLayout component works with async component 2`] = `"<div>Default <p>Test2</p></div>"`;
+exports[`RouterLayout component works with async component 2`] = `"<div>Bar <p>Test2</p></div>"`;
 
 exports[`RouterLayout component works with component constructor 1`] = `"<div>Foo <p>Test1</p></div>"`;
 

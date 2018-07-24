@@ -170,6 +170,7 @@ describe('RouterLayout component', () => {
       return new Promise(resolve => {
         setTimeout(() => {
           resolve({
+            layout: 'bar',
             template: '<p>Test2</p>'
           })
         }, 100)

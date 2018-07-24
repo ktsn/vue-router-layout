@@ -48,6 +48,15 @@ export function createRouterLayout(
       }
     },
 
+    provide() {
+      return {
+        $_routerLayout_notifyUpdate: () => {
+          const matched = this.$route.matched
+          this.layoutName = findLayoutName(matched)
+        }
+      }
+    },
+
     beforeRouteEnter(to, _from, next) {
       next((vm: any) => {
         vm.layoutName = findLayoutName(to.matched)
@@ -70,6 +79,21 @@ export function createRouterLayout(
     }
   })
 }
+
+Vue.mixin({
+  inject: {
+    $_routerLayout_notifyUpdate: {
+      default: null
+    }
+  },
+
+  beforeUpdate() {
+    const notify = (this as any).$_routerLayout_notifyUpdate
+    if (notify) {
+      notify()
+    }
+  }
+})
 
 declare module 'vue/types/options' {
   interface ComponentOptions<V extends Vue> {
