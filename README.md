@@ -29,7 +29,7 @@ Then, you pass `<RouterLayout>` to Vue Router's `routes` option with some childr
 ```js
 import Vue from 'vue'
 import Router from 'vue-router'
-import { createRouterLayout } from 'vue-rotuer-layout'
+import { createRouterLayout } from 'vue-router-layout'
 
 // Create <RouterLayout> component.
 const RouterLayout = createRouterLayout(layout => {
