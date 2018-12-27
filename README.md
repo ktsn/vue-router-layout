@@ -15,7 +15,7 @@ $ npm install vue-router-layout
 Create `<RouterLayout>` component by passing a callback which resolves layout component to `createRouterLayout`. The callback will receives a string of layout type and expect returning a promise resolves a layout component.
 
 ```js
-import { createRouterLayout } from 'vue-rotuer-layout'
+import { createRouterLayout } from 'vue-router-layout'
 
 // Create <RouterLayout> component.
 const RouterLayout = createRouterLayout(layout => {
