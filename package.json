@@ -52,25 +52,25 @@
     ],
     "globals": {
       "ts-jest": {
-        "tsConfigFile": "test/tsconfig.json"
+        "tsConfig": "test/tsconfig.json"
       }
     }
   },
   "devDependencies": {
-    "@types/jest": "^22.2.3",
-    "@vue/test-utils": "^1.0.0-beta.20",
-    "jest": "^22.4.4",
-    "prettier": "1.13.6",
-    "rollup": "^0.62.0",
-    "rollup-plugin-replace": "^2.0.0",
-    "ts-jest": "^22.4.6",
-    "tslint": "^5.9.1",
+    "@types/jest": "^24.0.5",
+    "@vue/test-utils": "^1.0.0-beta.29",
+    "jest": "^24.1.0",
+    "prettier": "1.16.4",
+    "rollup": "^1.1.2",
+    "rollup-plugin-replace": "^2.1.0",
+    "ts-jest": "^23.10.5",
+    "tslint": "^5.12.1",
     "tslint-config-ktsn": "^2.1.0",
-    "tslint-config-prettier": "^1.10.0",
-    "typescript": "^2.8.1",
-    "uglify-js": "^3.3.20",
-    "vue": "^2.5.16",
-    "vue-router": "^3.0.1",
-    "vue-template-compiler": "^2.5.16"
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.3.3",
+    "uglify-js": "^3.4.9",
+    "vue": "^2.6.6",
+    "vue-router": "^3.0.2",
+    "vue-template-compiler": "^2.6.6"
   }
 }
