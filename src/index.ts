@@ -1,4 +1,10 @@
-import Vue, { VueConstructor, VNode, Component, AsyncComponent } from 'vue'
+import Vue, {
+  VueConstructor,
+  VNode,
+  Component,
+  AsyncComponent,
+  ComponentOptions
+} from 'vue'
 import { RouteRecord } from 'vue-router'
 
 /**
@@ -23,10 +29,26 @@ function resolveLayoutName(matched: RouteRecord[]): string | undefined {
     return
   }
 
-  const isCtor = typeof Component === 'function' && Component.options
-  const layoutName = isCtor ? Component.options.layout : Component.layout
+  return getLayoutName(Component) || defaultName
+}
 
-  return layoutName || defaultName
+function getLayoutName(
+  Component: any /* ComponentOptions | VueConstructor */
+): string | undefined {
+  const isCtor = typeof Component === 'function' && Component.options
+  const options = isCtor ? Component.options : Component
+
+  if (options.layout) {
+    return options.layout
+  } else {
+    // Retrieve super component and mixins
+    const mixins: any[] = (options.mixins || []).slice().reverse()
+    const extend: any = options.extends || []
+
+    return mixins.concat(extend).reduce<string | undefined>((acc, c) => {
+      return acc || getLayoutName(c)
+    }, undefined)
+  }
 }
 
 export function createRouterLayout(
