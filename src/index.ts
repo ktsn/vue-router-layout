@@ -1,10 +1,4 @@
-import Vue, {
-  VueConstructor,
-  VNode,
-  Component,
-  AsyncComponent,
-  ComponentOptions
-} from 'vue'
+import Vue, { VueConstructor, VNode, Component, AsyncComponent } from 'vue'
 import { RouteRecord } from 'vue-router'
 
 /**
