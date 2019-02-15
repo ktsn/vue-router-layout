@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`RouterLayout component inherits layout value from super constructor 1`] = `"<div>Foo <p>component</p></div>"`;
+
+exports[`RouterLayout component prioritizes mixins option than extends 1`] = `"<div>Bar <p>component</p></div>"`;
+
+exports[`RouterLayout component pulls layout value from extends 1`] = `"<div>Foo <p>component</p></div>"`;
+
 exports[`RouterLayout component shows default layout 1`] = `"<div>Default <p>component</p></div>"`;
 
 exports[`RouterLayout component shows named layout 1`] = `"<div>Foo <p>component</p></div>"`;

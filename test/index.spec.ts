@@ -203,4 +203,65 @@ describe('RouterLayout component', () => {
       done()
     }, 200)
   })
+
+  it('pulls layout value from extends', async () => {
+    const Super = {
+      layout: 'foo'
+    }
+
+    const Comp = {
+      extends: Super,
+      template: '<p>component</p>'
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Comp
+      }
+    ])
+    expect(wrapper.html()).toMatchSnapshot()
+  })
+
+  it('inherits layout value from super constructor', async () => {
+    const Super = Vue.extend({
+      layout: 'foo'
+    })
+
+    const Comp = Super.extend({
+      template: '<p>component</p>'
+    })
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Comp
+      }
+    ])
+    expect(wrapper.html()).toMatchSnapshot()
+  })
+
+  it('prioritizes mixins option than extends', async () => {
+    const Mixin = {
+      layout: 'bar'
+    }
+
+    const Super = {
+      layout: 'foo'
+    }
+
+    const Comp = {
+      mixins: [Mixin],
+      extends: Super,
+      template: '<p>component</p>'
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Comp
+      }
+    ])
+    expect(wrapper.html()).toMatchSnapshot()
+  })
 })
