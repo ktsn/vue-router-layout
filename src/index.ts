@@ -77,7 +77,7 @@ export function createRouterLayout(
 
     beforeRouteEnter(to, _from, next) {
       next((vm: any) => {
-        vm.layoutName = resolveLayoutName(to.matched) || this.layoutName
+        vm.layoutName = resolveLayoutName(to.matched) || vm.layoutName
       })
     },
 
