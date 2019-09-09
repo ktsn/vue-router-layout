@@ -204,6 +204,90 @@ describe('RouterLayout component', () => {
     }, 200)
   })
 
+  it('works with async component with default export', async done => {
+    const Test1 = () => {
+      return Promise.resolve({
+        layout: 'foo',
+        template: '<p>Test1</p>'
+      })
+    }
+
+    const Test2 = () => {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          import('./dummy').then(resolve)
+        }, 100)
+      })
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Test1
+      },
+      {
+        path: 'test',
+        component: Test2
+      }
+    ])
+
+    // Foo - Test1
+    expect(wrapper.html()).toMatchSnapshot()
+
+    wrapper.vm.$router.push('/test')
+
+    // Foo - Test1 (Should not change layout until the async component is resolved)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.html()).toMatchSnapshot()
+
+    setTimeout(() => {
+      // Bar - Test2 (Should update layout after async component is resolved)
+      expect(wrapper.html()).toMatchSnapshot()
+      done()
+    }, 200)
+  })
+
+  it('should not instantiate destination page until layout is rendered', async done => {
+    const created = jest.fn()
+
+    const Test1 = () => {
+      return Promise.resolve({
+        layout: 'foo',
+        template: '<p>Test1</p>'
+      })
+    }
+
+    const Test2 = () => {
+      return new Promise<any>(resolve => {
+        setTimeout(() => {
+          resolve({
+            layout: 'bar',
+            template: '<p>Test2</p>',
+            created
+          })
+        }, 100)
+      })
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Test1
+      },
+      {
+        path: 'test',
+        component: Test2
+      }
+    ])
+
+    wrapper.vm.$router.push('/test')
+
+    setTimeout(() => {
+      expect(created).toHaveBeenCalledTimes(1)
+      done()
+    }, 200)
+  })
+
   it('pulls layout value from extends', async () => {
     const Super = {
       layout: 'foo'
