@@ -1,5 +1,11 @@
-import Vue, { VueConstructor, VNode, Component, AsyncComponent } from 'vue'
-import { RouteRecord } from 'vue-router'
+import Vue, {
+  VueConstructor,
+  VNode,
+  Component,
+  AsyncComponent,
+  ComponentOptions
+} from 'vue'
+import { RouteRecord, Route } from 'vue-router'
 
 /**
  * Find which layout the component should render.
@@ -45,9 +51,58 @@ function getLayoutName(
   }
 }
 
+function loadAsyncComponents(route: Route): Promise<unknown> {
+  const promises: Promise<unknown>[] = []
+
+  route.matched.forEach(record => {
+    Object.keys(record.components).forEach(key => {
+      const component: any = record.components[key]
+      const isAsync = typeof component === 'function' && !component.options
+
+      if (isAsync) {
+        promises.push(
+          component().then((loaded: any) => {
+            const isEsModule =
+              loaded.__esModule ||
+              (typeof Symbol !== 'undefined' &&
+                loaded[Symbol.toStringTag] === 'Module')
+            record.components[key] = isEsModule ? loaded.default : loaded
+          })
+        )
+      }
+    })
+  })
+
+  return Promise.all(promises)
+}
+
+let isAppliedMixin = false
+
+const mixinOptions: ComponentOptions<Vue> = {
+  inject: {
+    $_routerLayout_notifyRouteUpdate: {
+      default: null
+    }
+  },
+
+  async beforeRouteUpdate(to, _from, next) {
+    const notify: ((route: Route) => Promise<unknown>) | null = (this as any)
+      .$_routerLayout_notifyRouteUpdate
+    if (notify) {
+      await notify(to)
+    }
+    next()
+  }
+}
+
 export function createRouterLayout(
   resolve: (layoutName: string) => Promise<Component | { default: Component }>
 ): VueConstructor {
+  if (!isAppliedMixin) {
+    isAppliedMixin = true
+    Vue.mixin(mixinOptions)
+  }
+
   return Vue.extend({
     name: 'RouterLayout',
 
@@ -68,20 +123,22 @@ export function createRouterLayout(
 
     provide() {
       return {
-        $_routerLayout_notifyUpdate: () => {
-          const matched = this.$route.matched
-          this.layoutName = resolveLayoutName(matched) || this.layoutName
+        $_routerLayout_notifyRouteUpdate: async (to: Route) => {
+          await loadAsyncComponents(to)
+          this.layoutName = resolveLayoutName(to.matched) || this.layoutName
         }
       }
     },
 
-    beforeRouteEnter(to, _from, next) {
+    async beforeRouteEnter(to, _from, next) {
+      await loadAsyncComponents(to)
       next((vm: any) => {
         vm.layoutName = resolveLayoutName(to.matched) || vm.layoutName
       })
     },
 
-    beforeRouteUpdate(to, _from, next) {
+    async beforeRouteUpdate(to, _from, next) {
+      await loadAsyncComponents(to)
       this.layoutName = resolveLayoutName(to.matched) || this.layoutName
       next()
     },
@@ -97,21 +154,6 @@ export function createRouterLayout(
     }
   })
 }
-
-Vue.mixin({
-  inject: {
-    $_routerLayout_notifyUpdate: {
-      default: null
-    }
-  },
-
-  beforeUpdate() {
-    const notify = (this as any).$_routerLayout_notifyUpdate
-    if (notify) {
-      notify()
-    }
-  }
-})
 
 declare module 'vue/types/options' {
   interface ComponentOptions<V extends Vue> {
