@@ -1,5 +1,5 @@
 import { mount as _mount } from '@vue/test-utils'
-import Vue, { Component } from 'vue'
+import Vue, { Component, ComponentOptions } from 'vue'
 import Router, { RouteConfig } from 'vue-router'
 import { createRouterLayout } from '../src/index'
 
@@ -167,7 +167,7 @@ describe('RouterLayout component', () => {
     }
 
     const Test2 = () => {
-      return new Promise(resolve => {
+      return new Promise<ComponentOptions<Vue>>(resolve => {
         setTimeout(() => {
           resolve({
             layout: 'bar',
@@ -187,6 +187,8 @@ describe('RouterLayout component', () => {
         component: Test2
       }
     ])
+
+    await wrapper.vm.$nextTick()
 
     // Foo - Test1
     expect(wrapper.html()).toMatchSnapshot()
@@ -213,7 +215,7 @@ describe('RouterLayout component', () => {
     }
 
     const Test2 = () => {
-      return new Promise(resolve => {
+      return new Promise<any>(resolve => {
         setTimeout(() => {
           import('./dummy').then(resolve)
         }, 100)
@@ -230,6 +232,8 @@ describe('RouterLayout component', () => {
         component: Test2
       }
     ])
+
+    await wrapper.vm.$nextTick()
 
     // Foo - Test1
     expect(wrapper.html()).toMatchSnapshot()
