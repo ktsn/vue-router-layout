@@ -10,19 +10,19 @@ Vue.use(Router)
 
 const layouts: Record<string, Component> = {
   default: {
-    template: '<div>Default <router-view/></div>'
+    template: '<div>Default <router-view/></div>',
   },
 
   foo: {
-    template: '<div>Foo <router-view/></div>'
+    template: '<div>Foo <router-view/></div>',
   },
 
   bar: {
-    template: '<div>Bar <router-view/></div>'
-  }
+    template: '<div>Bar <router-view/></div>',
+  },
 }
 
-const RouterLayout = createRouterLayout(layout => {
+const RouterLayout = createRouterLayout((layout) => {
   return Promise.resolve(layouts[layout])
 })
 
@@ -33,17 +33,17 @@ async function mount(children: RouteConfig[]) {
       {
         path: '/',
         component: RouterLayout,
-        children
-      }
-    ]
+        children,
+      },
+    ],
   })
 
   const Root = Vue.extend({
-    template: '<router-view/>'
+    template: '<router-view/>',
   })
 
   const wrapper = _mount(Root, {
-    router
+    router,
   })
   await router.push('/')
   await wrapper.vm.$nextTick()
@@ -53,14 +53,14 @@ async function mount(children: RouteConfig[]) {
 describe('RouterLayout component', () => {
   it('shows default layout', async () => {
     const Comp = {
-      template: '<p>component</p>'
+      template: '<p>component</p>',
     }
 
     const wrapper = await mount([
       {
         path: '',
-        component: Comp
-      }
+        component: Comp,
+      },
     ])
     expect(wrapper.html()).toMatchSnapshot()
   })
@@ -68,14 +68,14 @@ describe('RouterLayout component', () => {
   it('shows named layout', async () => {
     const Comp = {
       layout: 'foo',
-      template: '<p>component</p>'
+      template: '<p>component</p>',
     }
 
     const wrapper = await mount([
       {
         path: '',
-        component: Comp
-      }
+        component: Comp,
+      },
     ])
     expect(wrapper.html()).toMatchSnapshot()
   })
@@ -83,12 +83,12 @@ describe('RouterLayout component', () => {
   it("uses the leaf component's layout option", async () => {
     const Test1 = {
       layout: 'foo',
-      template: '<div>Test1 <router-view/></div>'
+      template: '<div>Test1 <router-view/></div>',
     }
 
     const Test2 = {
       layout: 'bar',
-      template: '<p>Test2</p>'
+      template: '<p>Test2</p>',
     }
 
     const wrapper = await mount([
@@ -98,10 +98,10 @@ describe('RouterLayout component', () => {
         children: [
           {
             path: '',
-            component: Test2
-          }
-        ]
-      }
+            component: Test2,
+          },
+        ],
+      },
     ])
     expect(wrapper.html()).toMatchSnapshot()
   })
@@ -109,23 +109,23 @@ describe('RouterLayout component', () => {
   it('updates layout when route is changed', async () => {
     const Test1 = {
       layout: 'foo',
-      template: '<p>Test1</p>'
+      template: '<p>Test1</p>',
     }
 
     const Test2 = {
       layout: 'bar',
-      template: '<p>Test2</p>'
+      template: '<p>Test2</p>',
     }
 
     const wrapper = await mount([
       {
         path: '',
-        component: Test1
+        component: Test1,
       },
       {
         path: 'test',
-        component: Test2
-      }
+        component: Test2,
+      },
     ])
     await wrapper.vm.$router.push('/test')
     await wrapper.vm.$nextTick()
@@ -135,22 +135,22 @@ describe('RouterLayout component', () => {
   it('works with component constructor', async () => {
     const Test1 = Vue.extend({
       layout: 'foo',
-      template: '<p>Test1</p>'
+      template: '<p>Test1</p>',
     })
 
     const Test2 = Vue.extend({
-      template: '<p>Test2</p>'
+      template: '<p>Test2</p>',
     })
 
     const wrapper = await mount([
       {
         path: '',
-        component: Test1
+        component: Test1,
       },
       {
         path: 'test',
-        component: Test2
-      }
+        component: Test2,
+      },
     ])
     expect(wrapper.html()).toMatchSnapshot()
     await wrapper.vm.$router.push('/test')
@@ -158,20 +158,20 @@ describe('RouterLayout component', () => {
     expect(wrapper.html()).toMatchSnapshot()
   })
 
-  it('works with async component', async done => {
+  it('works with async component', async (done) => {
     const Test1 = () => {
       return Promise.resolve({
         layout: 'foo',
-        template: '<p>Test1</p>'
+        template: '<p>Test1</p>',
       })
     }
 
     const Test2 = () => {
-      return new Promise<ComponentOptions<Vue>>(resolve => {
+      return new Promise<ComponentOptions<Vue>>((resolve) => {
         setTimeout(() => {
           resolve({
             layout: 'bar',
-            template: '<p>Test2</p>'
+            template: '<p>Test2</p>',
           })
         }, 100)
       })
@@ -180,12 +180,12 @@ describe('RouterLayout component', () => {
     const wrapper = await mount([
       {
         path: '',
-        component: Test1
+        component: Test1,
       },
       {
         path: 'test',
-        component: Test2
-      }
+        component: Test2,
+      },
     ])
 
     await wrapper.vm.$nextTick()
@@ -206,16 +206,16 @@ describe('RouterLayout component', () => {
     }, 200)
   })
 
-  it('works with async component with default export', async done => {
+  it('works with async component with default export', async (done) => {
     const Test1 = () => {
       return Promise.resolve({
         layout: 'foo',
-        template: '<p>Test1</p>'
+        template: '<p>Test1</p>',
       })
     }
 
     const Test2 = () => {
-      return new Promise<any>(resolve => {
+      return new Promise<any>((resolve) => {
         setTimeout(() => {
           import('./dummy').then(resolve)
         }, 100)
@@ -225,12 +225,12 @@ describe('RouterLayout component', () => {
     const wrapper = await mount([
       {
         path: '',
-        component: Test1
+        component: Test1,
       },
       {
         path: 'test',
-        component: Test2
-      }
+        component: Test2,
+      },
     ])
 
     await wrapper.vm.$nextTick()
@@ -251,23 +251,23 @@ describe('RouterLayout component', () => {
     }, 200)
   })
 
-  it('should not instantiate destination page until layout is rendered', async done => {
+  it('should not instantiate destination page until layout is rendered', async (done) => {
     const created = jest.fn()
 
     const Test1 = () => {
       return Promise.resolve({
         layout: 'foo',
-        template: '<p>Test1</p>'
+        template: '<p>Test1</p>',
       })
     }
 
     const Test2 = () => {
-      return new Promise<any>(resolve => {
+      return new Promise<any>((resolve) => {
         setTimeout(() => {
           resolve({
             layout: 'bar',
             template: '<p>Test2</p>',
-            created
+            created,
           })
         }, 100)
       })
@@ -276,12 +276,12 @@ describe('RouterLayout component', () => {
     const wrapper = await mount([
       {
         path: '',
-        component: Test1
+        component: Test1,
       },
       {
         path: 'test',
-        component: Test2
-      }
+        component: Test2,
+      },
     ])
 
     wrapper.vm.$router.push('/test')
@@ -294,61 +294,61 @@ describe('RouterLayout component', () => {
 
   it('pulls layout value from extends', async () => {
     const Super = {
-      layout: 'foo'
+      layout: 'foo',
     }
 
     const Comp = {
       extends: Super,
-      template: '<p>component</p>'
+      template: '<p>component</p>',
     }
 
     const wrapper = await mount([
       {
         path: '',
-        component: Comp
-      }
+        component: Comp,
+      },
     ])
     expect(wrapper.html()).toMatchSnapshot()
   })
 
   it('inherits layout value from super constructor', async () => {
     const Super = Vue.extend({
-      layout: 'foo'
+      layout: 'foo',
     })
 
     const Comp = Super.extend({
-      template: '<p>component</p>'
+      template: '<p>component</p>',
     })
 
     const wrapper = await mount([
       {
         path: '',
-        component: Comp
-      }
+        component: Comp,
+      },
     ])
     expect(wrapper.html()).toMatchSnapshot()
   })
 
   it('prioritizes mixins option than extends', async () => {
     const Mixin = {
-      layout: 'bar'
+      layout: 'bar',
     }
 
     const Super = {
-      layout: 'foo'
+      layout: 'foo',
     }
 
     const Comp = {
       mixins: [Mixin],
       extends: Super,
-      template: '<p>component</p>'
+      template: '<p>component</p>',
     }
 
     const wrapper = await mount([
       {
         path: '',
-        component: Comp
-      }
+        component: Comp,
+      },
     ])
     expect(wrapper.html()).toMatchSnapshot()
   })

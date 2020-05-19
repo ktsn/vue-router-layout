@@ -21,11 +21,17 @@ const baseConfig = {
     name: capitalize(pkg.name),
     banner,
     globals: {
-      vue: 'Vue'
-    }
+      vue: 'Vue',
+    },
   },
   external: ['vue'],
-  plugins: []
+  plugins: [],
+  onwarn: (warning) => {
+    if (warning.code === 'THIS_IS_UNDEFINED') {
+      return
+    }
+    console.error(warning.message)
+  },
 }
 
 function run(options) {
@@ -35,9 +41,9 @@ function run(options) {
   const config = genConfig(head)
 
   return build(config)
-    .then(bundle => write(config, bundle, head.env === 'production'))
+    .then((bundle) => write(config, bundle, head.env === 'production'))
     .then(() => run(tail))
-    .catch(err => {
+    .catch((err) => {
       console.error(err.stack)
       process.exit(1)
     })
@@ -48,14 +54,14 @@ function genConfig(options) {
 
   res.output = Object.assign({}, res.output, {
     file: options.output,
-    format: options.format
+    format: options.format,
   })
 
   if (options.env) {
     res.plugins = res.plugins.concat([
       replace({
-        'process.env.NODE_ENV': JSON.stringify(options.env)
-      })
+        'process.env.NODE_ENV': JSON.stringify(options.env),
+      }),
     ])
   }
 
@@ -75,7 +81,7 @@ function write(config, bundle, prod) {
       .then(minify)
       .then(({ code }) => {
         return new Promise((resolve, reject) => {
-          fs.writeFile(config.output.file, code, err => {
+          fs.writeFile(config.output.file, code, (err) => {
             if (err) {
               return reject(err)
             }
@@ -86,15 +92,15 @@ function write(config, bundle, prod) {
   }
 }
 
-function minify({ code, map }) {
+function minify({ output: [{ code }] }) {
   return uglify.minify(code, {
     compress: {
-      toplevel: true
+      toplevel: true,
     },
     output: {
       beautify: false,
-      comments: /(?:^!|@license)/
-    }
+      comments: /(?:^!|@license)/,
+    },
   })
 }
 
