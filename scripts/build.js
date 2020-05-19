@@ -26,6 +26,12 @@ const baseConfig = {
   },
   external: ['vue'],
   plugins: [],
+    onwarn: (warning) => {
+    if (warning.code === 'THIS_IS_UNDEFINED') {
+      return
+    }
+    console.error(warning.message)
+  }
 }
 
 function run(options) {
@@ -86,7 +92,7 @@ function write(config, bundle, prod) {
   }
 }
 
-function minify({ code, map }) {
+function minify({ output: [{ code }] }) {
   return uglify.minify(code, {
     compress: {
       toplevel: true,
