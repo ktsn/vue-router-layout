@@ -3,7 +3,7 @@ import Vue, {
   VNode,
   Component,
   AsyncComponent,
-  ComponentOptions
+  ComponentOptions,
 } from 'vue'
 import { RouteRecord, Route } from 'vue-router'
 
@@ -54,8 +54,8 @@ function getLayoutName(
 function loadAsyncComponents(route: Route): Promise<unknown> {
   const promises: Promise<unknown>[] = []
 
-  route.matched.forEach(record => {
-    Object.keys(record.components).forEach(key => {
+  route.matched.forEach((record) => {
+    Object.keys(record.components).forEach((key) => {
       const component: any = record.components[key]
       const isAsync = typeof component === 'function' && !component.options
 
@@ -81,8 +81,8 @@ let isAppliedMixin = false
 const mixinOptions: ComponentOptions<Vue> = {
   inject: {
     $_routerLayout_notifyRouteUpdate: {
-      default: null
-    }
+      default: null,
+    },
   },
 
   async beforeRouteUpdate(to, _from, next) {
@@ -92,7 +92,7 @@ const mixinOptions: ComponentOptions<Vue> = {
       await notify(to)
     }
     next()
-  }
+  },
 }
 
 export function createRouterLayout(
@@ -109,7 +109,7 @@ export function createRouterLayout(
     data() {
       return {
         layoutName: undefined as string | undefined,
-        layouts: Object.create(null) as Record<string, AsyncComponent>
+        layouts: Object.create(null) as Record<string, AsyncComponent>,
       }
     },
 
@@ -118,7 +118,7 @@ export function createRouterLayout(
         if (!this.layouts[name]) {
           this.$set(this.layouts, name, () => resolve(name))
         }
-      }
+      },
     },
 
     provide() {
@@ -126,7 +126,7 @@ export function createRouterLayout(
         $_routerLayout_notifyRouteUpdate: async (to: Route) => {
           await loadAsyncComponents(to)
           this.layoutName = resolveLayoutName(to.matched) || this.layoutName
-        }
+        },
       }
     },
 
@@ -149,9 +149,9 @@ export function createRouterLayout(
         return h()
       }
       return h(layout, {
-        key: this.layoutName
+        key: this.layoutName,
       })
-    }
+    },
   })
 }
 
