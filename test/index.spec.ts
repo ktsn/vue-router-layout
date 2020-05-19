@@ -45,7 +45,7 @@ async function mount(children: RouteConfig[]) {
   const wrapper = _mount(Root, {
     router
   })
-  router.push('/')
+  await router.push('/')
   await wrapper.vm.$nextTick()
   return wrapper
 }
@@ -127,7 +127,7 @@ describe('RouterLayout component', () => {
         component: Test2
       }
     ])
-    wrapper.vm.$router.push('/test')
+    await wrapper.vm.$router.push('/test')
     await wrapper.vm.$nextTick()
     expect(wrapper.html()).toMatchSnapshot()
   })
@@ -153,7 +153,7 @@ describe('RouterLayout component', () => {
       }
     ])
     expect(wrapper.html()).toMatchSnapshot()
-    wrapper.vm.$router.push('/test')
+    await wrapper.vm.$router.push('/test')
     await wrapper.vm.$nextTick()
     expect(wrapper.html()).toMatchSnapshot()
   })
