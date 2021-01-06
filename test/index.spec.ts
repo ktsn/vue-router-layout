@@ -333,4 +333,10 @@ describe('RouterLayout component', () => {
     ])
     expect(wrapper.html()).toMatchSnapshot()
   })
+
+  it('warn when the layout component is used before installing the plugin', () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {/* nothing */})
+    _mount(RouterLayout)
+    expect(console.error).toHaveBeenCalledWith('[vue-router-layout] Call app.use(VueRouterLayout) before using the layout component.')
+  })
 })
