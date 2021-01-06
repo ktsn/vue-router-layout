@@ -1,11 +1,14 @@
-import Vue, {
-  VueConstructor,
+import {
   VNode,
   Component,
-  AsyncComponent,
-  ComponentOptions,
+  ConcreteComponent,
+  h,
+  defineComponent,
+  defineAsyncComponent,
+  App,
+  shallowReactive
 } from 'vue'
-import { RouteRecord, Route } from 'vue-router'
+import { RouteRecord, RouteLocationNormalized } from 'vue-router'
 
 /**
  * Find which layout the component should render.
@@ -51,7 +54,7 @@ function getLayoutName(
   }
 }
 
-function loadAsyncComponents(route: Route): Promise<unknown> {
+function loadAsyncComponents(route: RouteLocationNormalized): Promise<unknown> {
   const promises: Promise<unknown>[] = []
 
   route.matched.forEach((record) => {
@@ -76,54 +79,49 @@ function loadAsyncComponents(route: Route): Promise<unknown> {
   return Promise.all(promises)
 }
 
-let isAppliedMixin = false
-
-const mixinOptions: ComponentOptions<Vue> = {
-  inject: {
-    $_routerLayout_notifyRouteUpdate: {
-      default: null,
+function install(app: App) {
+  app.mixin({
+    inject: {
+      $_routerLayout_notifyRouteUpdate: {
+        default: null,
+      },
     },
-  },
 
-  async beforeRouteUpdate(to, _from, next) {
-    const notify: ((route: Route) => Promise<unknown>) | null = (this as any)
-      .$_routerLayout_notifyRouteUpdate
-    if (notify) {
-      await notify(to)
-    }
-    next()
-  },
+    async beforeRouteUpdate(to, _from, next) {
+      const notify: ((route: RouteLocationNormalized) => Promise<unknown>) | null = (this as any)
+        .$_routerLayout_notifyRouteUpdate
+      if (notify) {
+        await notify(to)
+      }
+      next()
+    },
+  })
 }
 
 export function createRouterLayout(
   resolve: (layoutName: string) => Promise<Component | { default: Component }>
-): VueConstructor {
-  if (!isAppliedMixin) {
-    isAppliedMixin = true
-    Vue.mixin(mixinOptions)
-  }
-
-  return Vue.extend({
+) {
+  return defineComponent({
     name: 'RouterLayout',
 
     data() {
       return {
         layoutName: undefined as string | undefined,
-        layouts: Object.create(null) as Record<string, AsyncComponent>,
+        layouts: shallowReactive(Object.create(null) as Record<string, ConcreteComponent>),
       }
     },
 
     watch: {
-      layoutName(name) {
-        if (!this.layouts[name]) {
-          this.$set(this.layouts, name, () => resolve(name))
+      layoutName(name: string | undefined) {
+        if (name && !this.layouts[name]) {
+          this.layouts[name] = defineAsyncComponent(() => resolve(name)) as ConcreteComponent
         }
       },
     },
 
     provide() {
       return {
-        $_routerLayout_notifyRouteUpdate: async (to: Route) => {
+        $_routerLayout_notifyRouteUpdate: async (to: RouteLocationNormalized) => {
           await loadAsyncComponents(to)
           this.layoutName = resolveLayoutName(to.matched) || this.layoutName
         },
@@ -143,10 +141,10 @@ export function createRouterLayout(
       next()
     },
 
-    render(h): VNode {
+    render(): VNode {
       const layout = this.layoutName && this.layouts[this.layoutName]
       if (!layout) {
-        return h()
+        return h('span')
       }
       return h(layout, {
         key: this.layoutName,
@@ -155,8 +153,12 @@ export function createRouterLayout(
   })
 }
 
-declare module 'vue/types/options' {
-  interface ComponentOptions<V extends Vue> {
+export default {
+  install
+}
+
+declare module '@vue/runtime-core' {
+  interface ComponentCustomOptions {
     layout?: string
   }
 }

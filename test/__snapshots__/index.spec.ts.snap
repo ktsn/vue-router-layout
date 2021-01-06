@@ -1,77 +1,29 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`RouterLayout component inherits layout value from super constructor 1`] = `
-"<div>Foo <p>component</p>
-</div>"
-`;
+exports[`RouterLayout component prioritizes mixins option than extends 1`] = `"<div>Bar <p>component</p></div>"`;
 
-exports[`RouterLayout component prioritizes mixins option than extends 1`] = `
-"<div>Bar <p>component</p>
-</div>"
-`;
+exports[`RouterLayout component pulls layout value from extends 1`] = `"<div>Foo <p>component</p></div>"`;
 
-exports[`RouterLayout component pulls layout value from extends 1`] = `
-"<div>Foo <p>component</p>
-</div>"
-`;
+exports[`RouterLayout component shows default layout 1`] = `"<div>Default <p>component</p></div>"`;
 
-exports[`RouterLayout component shows default layout 1`] = `
-"<div>Default <p>component</p>
-</div>"
-`;
+exports[`RouterLayout component shows named layout 1`] = `"<div>Foo <p>component</p></div>"`;
 
-exports[`RouterLayout component shows named layout 1`] = `
-"<div>Foo <p>component</p>
-</div>"
-`;
+exports[`RouterLayout component updates layout when route is changed 1`] = `"<div>Bar <p>Test2</p></div>"`;
 
-exports[`RouterLayout component updates layout when route is changed 1`] = `
-"<div>Bar <p>Test2</p>
-</div>"
-`;
+exports[`RouterLayout component uses the leaf component's layout option 1`] = `"<div>Bar <div>Test1 <p>Test2</p></div></div>"`;
 
-exports[`RouterLayout component uses the leaf component's layout option 1`] = `
-"<div>Bar <div>Test1 <p>Test2</p>
-  </div>
-</div>"
-`;
+exports[`RouterLayout component works with async component 1`] = `"<div>Foo <p>Test1</p></div>"`;
 
-exports[`RouterLayout component works with async component 1`] = `
-"<div>Foo <p>Test1</p>
-</div>"
-`;
+exports[`RouterLayout component works with async component 2`] = `"<div>Foo <p>Test1</p></div>"`;
 
-exports[`RouterLayout component works with async component 2`] = `
-"<div>Foo <p>Test1</p>
-</div>"
-`;
+exports[`RouterLayout component works with async component 3`] = `"<div>Bar <p>Test2</p></div>"`;
 
-exports[`RouterLayout component works with async component 3`] = `
-"<div>Bar <p>Test2</p>
-</div>"
-`;
+exports[`RouterLayout component works with async component with default export 1`] = `"<div>Foo <p>Test1</p></div>"`;
 
-exports[`RouterLayout component works with async component with default export 1`] = `
-"<div>Foo <p>Test1</p>
-</div>"
-`;
+exports[`RouterLayout component works with async component with default export 2`] = `"<div>Foo <p>Test1</p></div>"`;
 
-exports[`RouterLayout component works with async component with default export 2`] = `
-"<div>Foo <p>Test1</p>
-</div>"
-`;
+exports[`RouterLayout component works with async component with default export 3`] = `"<div>Bar <p>Dummy</p></div>"`;
 
-exports[`RouterLayout component works with async component with default export 3`] = `
-"<div>Bar <p>Dummy</p>
-</div>"
-`;
+exports[`RouterLayout component works with component constructor 1`] = `"<div>Foo <p>Test1</p></div>"`;
 
-exports[`RouterLayout component works with component constructor 1`] = `
-"<div>Foo <p>Test1</p>
-</div>"
-`;
-
-exports[`RouterLayout component works with component constructor 2`] = `
-"<div>Default <p>Test2</p>
-</div>"
-`;
+exports[`RouterLayout component works with component constructor 2`] = `"<div>Default <p>Test2</p></div>"`;
