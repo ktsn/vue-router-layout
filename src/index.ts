@@ -6,7 +6,7 @@ import {
   defineComponent,
   defineAsyncComponent,
   App,
-  shallowReactive
+  shallowReactive,
 } from 'vue'
 import { RouteRecord, RouteLocationNormalized } from 'vue-router'
 
@@ -82,7 +82,7 @@ function loadAsyncComponents(route: RouteLocationNormalized): Promise<unknown> {
 function install(app: App) {
   app.mixin({
     beforeCreate() {
-      (this as any).$_routerLayout_installed = true
+      ;(this as any).$_routerLayout_installed = true
     },
 
     inject: {
@@ -92,8 +92,9 @@ function install(app: App) {
     },
 
     async beforeRouteUpdate(to, _from, next) {
-      const notify: ((route: RouteLocationNormalized) => Promise<unknown>) | null = (this as any)
-        .$_routerLayout_notifyRouteUpdate
+      const notify:
+        | ((route: RouteLocationNormalized) => Promise<unknown>)
+        | null = (this as any).$_routerLayout_notifyRouteUpdate
       if (notify) {
         await notify(to)
       }
@@ -111,21 +112,27 @@ export function createRouterLayout(
     data() {
       return {
         layoutName: undefined as string | undefined,
-        layouts: shallowReactive(Object.create(null) as Record<string, ConcreteComponent>),
+        layouts: shallowReactive(
+          Object.create(null) as Record<string, ConcreteComponent>
+        ),
       }
     },
 
     watch: {
       layoutName(name: string | undefined) {
         if (name && !this.layouts[name]) {
-          this.layouts[name] = defineAsyncComponent(() => resolve(name)) as ConcreteComponent
+          this.layouts[name] = defineAsyncComponent(() =>
+            resolve(name)
+          ) as ConcreteComponent
         }
       },
     },
 
     provide() {
       return {
-        $_routerLayout_notifyRouteUpdate: async (to: RouteLocationNormalized) => {
+        $_routerLayout_notifyRouteUpdate: async (
+          to: RouteLocationNormalized
+        ) => {
           await loadAsyncComponents(to)
           this.layoutName = resolveLayoutName(to.matched) || this.layoutName
         },
@@ -133,8 +140,13 @@ export function createRouterLayout(
     },
 
     beforeCreate() {
-      if (process.env.NODE_ENV !== 'production' && !(this as any).$_routerLayout_installed) {
-        console.error('[vue-router-layout] Call app.use(VueRouterLayout) before using the layout component.')
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        !(this as any).$_routerLayout_installed
+      ) {
+        console.error(
+          '[vue-router-layout] Call app.use(VueRouterLayout) before using the layout component.'
+        )
       }
     },
 
@@ -164,7 +176,7 @@ export function createRouterLayout(
 }
 
 export default {
-  install
+  install,
 }
 
 declare module '@vue/runtime-core' {

@@ -20,6 +20,7 @@ const baseConfig = {
   output: {
     name: capitalize(pkg.name),
     banner,
+    exports: 'named',
     globals: {
       vue: 'Vue',
     },

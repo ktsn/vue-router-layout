@@ -39,8 +39,8 @@ async function mount(children: RouteRecordRaw[]) {
 
   const wrapper = _mount(Root, {
     global: {
-      plugins: [router, VueRouterLayout]
-    }
+      plugins: [router, VueRouterLayout],
+    },
   })
   await router.push('/')
   await wrapper.vm.$nextTick()
@@ -335,8 +335,12 @@ describe('RouterLayout component', () => {
   })
 
   it('warn when the layout component is used before installing the plugin', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {/* nothing */})
+    jest.spyOn(console, 'error').mockImplementation(() => {
+      /* nothing */
+    })
     _mount(RouterLayout)
-    expect(console.error).toHaveBeenCalledWith('[vue-router-layout] Call app.use(VueRouterLayout) before using the layout component.')
+    expect(console.error).toHaveBeenCalledWith(
+      '[vue-router-layout] Call app.use(VueRouterLayout) before using the layout component.'
+    )
   })
 })
