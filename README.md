@@ -10,9 +10,28 @@ You may want to use [vue-cli-plugin-auto-routing](https://github.com/ktsn/vue-cl
 $ npm install vue-router-layout
 ```
 
+## Supported Vue Version
+
+0.2.0 or newer only supports Vue >= 3.0.0. If you want to use vue-router-layout with Vue v2, try 0.1.x.
+
 ## Overview
 
-Create `<RouterLayout>` component by passing a callback which resolves layout component to `createRouterLayout`. The callback will receives a string of layout type and expect returning a promise resolves a layout component.
+First of all, install vue-router-layout plugin to your Vue app instance.
+
+```js
+import { createApp } from 'vue'
+import VueRouterLayout from 'vue-router-layout'
+import App from './App.vue'
+
+const app = createApp(App)
+
+// Install vue-router-layout
+app.use(VueRouterLayout)
+
+app.mount('#app')
+```
+
+Then, create `<RouterLayout>` component by passing a callback which resolves layout component to `createRouterLayout`. The callback will receives a string of layout type and expect returning a promise resolves a layout component.
 
 ```js
 import { createRouterLayout } from 'vue-router-layout'
@@ -24,11 +43,11 @@ const RouterLayout = createRouterLayout(layout => {
 })
 ```
 
-Then, you pass `<RouterLayout>` to Vue Router's `routes` option with some children components.
+Pass `<RouterLayout>` to Vue Router's `routes` option with some children components.
 
 ```js
-import Vue from 'vue'
-import Router from 'vue-router'
+
+import { createRouter, createWebHistory } from 'vue-router'
 import { createRouterLayout } from 'vue-router-layout'
 
 // Create <RouterLayout> component.
@@ -37,9 +56,8 @@ const RouterLayout = createRouterLayout(layout => {
   return import('@/layouts/' + layout + '.vue')
 })
 
-Vue.use(Router)
-
-export default new Router({
+export default createRouter({
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
