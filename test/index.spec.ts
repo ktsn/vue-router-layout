@@ -1,12 +1,7 @@
 import { mount as _mount } from '@vue/test-utils'
-import Vue, { Component, ComponentOptions } from 'vue'
-import Router, { RouteConfig } from 'vue-router'
-import { createRouterLayout } from '../src/index'
-
-Vue.config.productionTip = false
-Vue.config.devtools = false
-
-Vue.use(Router)
+import { defineComponent, Component, ComponentOptions } from 'vue'
+import { createRouter, createMemoryHistory, RouteRecordRaw } from 'vue-router'
+import VueRouterLayout, { createRouterLayout } from '../src/index'
 
 const layouts: Record<string, Component> = {
   default: {
@@ -26,9 +21,9 @@ const RouterLayout = createRouterLayout((layout) => {
   return Promise.resolve(layouts[layout])
 })
 
-async function mount(children: RouteConfig[]) {
-  const router = new Router({
-    mode: 'abstract',
+async function mount(children: RouteRecordRaw[]) {
+  const router = createRouter({
+    history: createMemoryHistory(),
     routes: [
       {
         path: '/',
@@ -38,14 +33,18 @@ async function mount(children: RouteConfig[]) {
     ],
   })
 
-  const Root = Vue.extend({
+  const Root = defineComponent({
     template: '<router-view/>',
   })
 
   const wrapper = _mount(Root, {
-    router,
+    global: {
+      plugins: [router, VueRouterLayout],
+    },
   })
   await router.push('/')
+  await wrapper.vm.$nextTick()
+  await wrapper.vm.$nextTick()
   await wrapper.vm.$nextTick()
   return wrapper
 }
@@ -133,12 +132,12 @@ describe('RouterLayout component', () => {
   })
 
   it('works with component constructor', async () => {
-    const Test1 = Vue.extend({
+    const Test1 = defineComponent({
       layout: 'foo',
       template: '<p>Test1</p>',
     })
 
-    const Test2 = Vue.extend({
+    const Test2 = defineComponent({
       template: '<p>Test2</p>',
     })
 
@@ -167,7 +166,7 @@ describe('RouterLayout component', () => {
     }
 
     const Test2 = () => {
-      return new Promise<ComponentOptions<Vue>>((resolve) => {
+      return new Promise<ComponentOptions>((resolve) => {
         setTimeout(() => {
           resolve({
             layout: 'bar',
@@ -311,24 +310,6 @@ describe('RouterLayout component', () => {
     expect(wrapper.html()).toMatchSnapshot()
   })
 
-  it('inherits layout value from super constructor', async () => {
-    const Super = Vue.extend({
-      layout: 'foo',
-    })
-
-    const Comp = Super.extend({
-      template: '<p>component</p>',
-    })
-
-    const wrapper = await mount([
-      {
-        path: '',
-        component: Comp,
-      },
-    ])
-    expect(wrapper.html()).toMatchSnapshot()
-  })
-
   it('prioritizes mixins option than extends', async () => {
     const Mixin = {
       layout: 'bar',
@@ -351,5 +332,15 @@ describe('RouterLayout component', () => {
       },
     ])
     expect(wrapper.html()).toMatchSnapshot()
+  })
+
+  it('warn when the layout component is used before installing the plugin', () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {
+      /* nothing */
+    })
+    _mount(RouterLayout)
+    expect(console.error).toHaveBeenCalledWith(
+      '[vue-router-layout] Call app.use(VueRouterLayout) before using the layout component.'
+    )
   })
 })
