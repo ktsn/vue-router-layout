@@ -1,11 +1,7 @@
-import Vue, {
-  VueConstructor,
-  VNode,
-  Component,
-  AsyncComponent,
-  ComponentOptions
-} from 'vue'
+import Vue, { VueConstructor, VNode, ComponentOptions } from 'vue'
 import { RouteRecord, Route } from 'vue-router'
+
+type Component = ComponentOptions<any> | VueConstructor
 
 /**
  * Find which layout the component should render.
@@ -54,19 +50,15 @@ function getLayoutName(
 function loadAsyncComponents(route: Route): Promise<unknown> {
   const promises: Promise<unknown>[] = []
 
-  route.matched.forEach(record => {
-    Object.keys(record.components).forEach(key => {
+  route.matched.forEach((record) => {
+    Object.keys(record.components).forEach((key) => {
       const component: any = record.components[key]
       const isAsync = typeof component === 'function' && !component.options
 
       if (isAsync) {
         promises.push(
           component().then((loaded: any) => {
-            const isEsModule =
-              loaded.__esModule ||
-              (typeof Symbol !== 'undefined' &&
-                loaded[Symbol.toStringTag] === 'Module')
-            record.components[key] = isEsModule ? loaded.default : loaded
+            record.components[key] = normalizeEsModuleComponent(loaded)
           })
         )
       }
@@ -76,13 +68,23 @@ function loadAsyncComponents(route: Route): Promise<unknown> {
   return Promise.all(promises)
 }
 
+function normalizeEsModuleComponent(
+  comp: Component | { default: Component }
+): Component {
+  const c: any = comp
+  const isEsModule =
+    c.__esModule ||
+    (typeof Symbol !== 'undefined' && c[Symbol.toStringTag] === 'Module')
+  return isEsModule ? c.default : c
+}
+
 let isAppliedMixin = false
 
 const mixinOptions: ComponentOptions<Vue> = {
   inject: {
     $_routerLayout_notifyRouteUpdate: {
-      default: null
-    }
+      default: null,
+    },
   },
 
   async beforeRouteUpdate(to, _from, next) {
@@ -92,7 +94,7 @@ const mixinOptions: ComponentOptions<Vue> = {
       await notify(to)
     }
     next()
-  }
+  },
 }
 
 export function createRouterLayout(
@@ -109,38 +111,40 @@ export function createRouterLayout(
     data() {
       return {
         layoutName: undefined as string | undefined,
-        layouts: Object.create(null) as Record<string, AsyncComponent>
-      }
-    },
-
-    watch: {
-      layoutName(name) {
-        if (!this.layouts[name]) {
-          this.$set(this.layouts, name, () => resolve(name))
-        }
-      }
-    },
-
-    provide() {
-      return {
-        $_routerLayout_notifyRouteUpdate: async (to: Route) => {
-          await loadAsyncComponents(to)
-          this.layoutName = resolveLayoutName(to.matched) || this.layoutName
-        }
+        layouts: Object.create(null) as Record<string, Component>,
       }
     },
 
     async beforeRouteEnter(to, _from, next) {
       await loadAsyncComponents(to)
+
+      const name = resolveLayoutName(to.matched)
+      const layoutComp = name
+        ? normalizeEsModuleComponent(await resolve(name))
+        : undefined
+
       next((vm: any) => {
-        vm.layoutName = resolveLayoutName(to.matched) || vm.layoutName
+        vm.layoutName = name
+        if (name && layoutComp) {
+          vm.layouts[name] = layoutComp
+        }
       })
     },
 
     async beforeRouteUpdate(to, _from, next) {
-      await loadAsyncComponents(to)
-      this.layoutName = resolveLayoutName(to.matched) || this.layoutName
-      next()
+      try {
+        await loadAsyncComponents(to)
+
+        const name = resolveLayoutName(to.matched) || this.layoutName
+        if (name && !this.layouts[name]) {
+          this.layouts[name] = normalizeEsModuleComponent(await resolve(name))
+        }
+
+        this.layoutName = name
+        next()
+      } catch (error) {
+        next(error)
+      }
     },
 
     render(h): VNode {
@@ -149,9 +153,9 @@ export function createRouterLayout(
         return h()
       }
       return h(layout, {
-        key: this.layoutName
+        key: this.layoutName,
       })
-    }
+    },
   })
 }
 

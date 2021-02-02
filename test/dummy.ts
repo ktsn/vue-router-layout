@@ -1,4 +1,4 @@
 export default {
   layout: 'bar',
-  template: '<p>Dummy</p>'
+  template: '<p>Dummy</p>',
 }
