@@ -85,7 +85,7 @@ function normalizeEsModuleComponent(
 
 function install() {
   console.info(
-    '[vue-router-layout] Vue.use(VueRouterLayout) is no longer needed. You can sefely remove it.'
+    '[vue-router-layout] app.use(VueRouterLayout) is no longer needed. You can sefely remove it.'
   )
 }
 
