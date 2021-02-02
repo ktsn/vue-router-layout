@@ -4,8 +4,6 @@ import {
   ConcreteComponent,
   h,
   defineComponent,
-  defineAsyncComponent,
-  App,
   shallowReactive,
 } from 'vue'
 import { RouteRecord, RouteLocationNormalized } from 'vue-router'
@@ -65,11 +63,7 @@ function loadAsyncComponents(route: RouteLocationNormalized): Promise<unknown> {
       if (isAsync) {
         promises.push(
           component().then((loaded: any) => {
-            const isEsModule =
-              loaded.__esModule ||
-              (typeof Symbol !== 'undefined' &&
-                loaded[Symbol.toStringTag] === 'Module')
-            record.components[key] = isEsModule ? loaded.default : loaded
+            record.components[key] = normalizeEsModuleComponent(loaded)
           })
         )
       }
@@ -79,28 +73,20 @@ function loadAsyncComponents(route: RouteLocationNormalized): Promise<unknown> {
   return Promise.all(promises)
 }
 
-function install(app: App) {
-  app.mixin({
-    beforeCreate() {
-      ;(this as any).$_routerLayout_installed = true
-    },
+function normalizeEsModuleComponent(
+  comp: Component | { default: Component }
+): Component {
+  const c: any = comp
+  const isEsModule =
+    c.__esModule ||
+    (typeof Symbol !== 'undefined' && c[Symbol.toStringTag] === 'Module')
+  return isEsModule ? c.default : c
+}
 
-    inject: {
-      $_routerLayout_notifyRouteUpdate: {
-        default: null,
-      },
-    },
-
-    async beforeRouteUpdate(to, _from, next) {
-      const notify:
-        | ((route: RouteLocationNormalized) => Promise<unknown>)
-        | null = (this as any).$_routerLayout_notifyRouteUpdate
-      if (notify) {
-        await notify(to)
-      }
-      next()
-    },
-  })
+function install() {
+  console.info(
+    '[vue-router-layout] app.use(VueRouterLayout) is no longer needed. You can sefely remove it.'
+  )
 }
 
 export function createRouterLayout(
@@ -113,54 +99,41 @@ export function createRouterLayout(
       return {
         layoutName: undefined as string | undefined,
         layouts: shallowReactive(
-          Object.create(null) as Record<string, ConcreteComponent>
+          Object.create(null) as Record<string, Component>
         ),
-      }
-    },
-
-    watch: {
-      layoutName(name: string | undefined) {
-        if (name && !this.layouts[name]) {
-          this.layouts[name] = defineAsyncComponent(() =>
-            resolve(name)
-          ) as ConcreteComponent
-        }
-      },
-    },
-
-    provide() {
-      return {
-        $_routerLayout_notifyRouteUpdate: async (
-          to: RouteLocationNormalized
-        ) => {
-          await loadAsyncComponents(to)
-          this.layoutName = resolveLayoutName(to.matched) || this.layoutName
-        },
-      }
-    },
-
-    beforeCreate() {
-      if (
-        process.env.NODE_ENV !== 'production' &&
-        !(this as any).$_routerLayout_installed
-      ) {
-        console.error(
-          '[vue-router-layout] Call app.use(VueRouterLayout) before using the layout component.'
-        )
       }
     },
 
     async beforeRouteEnter(to, _from, next) {
       await loadAsyncComponents(to)
+
+      const name = resolveLayoutName(to.matched)
+      const layoutComp = name
+        ? normalizeEsModuleComponent(await resolve(name))
+        : undefined
+
       next((vm: any) => {
-        vm.layoutName = resolveLayoutName(to.matched) || vm.layoutName
+        vm.layoutName = name
+        if (name && layoutComp) {
+          vm.layouts[name] = layoutComp
+        }
       })
     },
 
     async beforeRouteUpdate(to, _from, next) {
-      await loadAsyncComponents(to)
-      this.layoutName = resolveLayoutName(to.matched) || this.layoutName
-      next()
+      try {
+        await loadAsyncComponents(to)
+
+        const name = resolveLayoutName(to.matched) || this.layoutName
+        if (name && !this.layouts[name]) {
+          this.layouts[name] = normalizeEsModuleComponent(await resolve(name))
+        }
+
+        this.layoutName = name
+        next()
+      } catch (error) {
+        next(error)
+      }
     },
 
     render(): VNode {
@@ -168,7 +141,7 @@ export function createRouterLayout(
       if (!layout) {
         return h('span')
       }
-      return h(layout, {
+      return h(layout as ConcreteComponent, {
         key: this.layoutName,
       })
     },

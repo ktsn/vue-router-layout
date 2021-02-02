@@ -1,7 +1,7 @@
 import { mount as _mount } from '@vue/test-utils'
 import { defineComponent, Component, ComponentOptions } from 'vue'
 import { createRouter, createMemoryHistory, RouteRecordRaw } from 'vue-router'
-import VueRouterLayout, { createRouterLayout } from '../src/index'
+import { createRouterLayout } from '../src/index'
 
 const layouts: Record<string, Component> = {
   default: {
@@ -18,7 +18,11 @@ const layouts: Record<string, Component> = {
 }
 
 const RouterLayout = createRouterLayout((layout) => {
-  return Promise.resolve(layouts[layout])
+  if (layouts[layout]) {
+    return Promise.resolve(layouts[layout])
+  } else {
+    return Promise.reject(new Error('Not found layout: ' + layout))
+  }
 })
 
 async function mount(children: RouteRecordRaw[]) {
@@ -39,7 +43,7 @@ async function mount(children: RouteRecordRaw[]) {
 
   const wrapper = _mount(Root, {
     global: {
-      plugins: [router, VueRouterLayout],
+      plugins: [router],
     },
   })
   await router.push('/')
@@ -334,13 +338,72 @@ describe('RouterLayout component', () => {
     expect(wrapper.html()).toMatchSnapshot()
   })
 
-  it('warn when the layout component is used before installing the plugin', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {
-      /* nothing */
-    })
-    _mount(RouterLayout)
-    expect(console.error).toHaveBeenCalledWith(
-      '[vue-router-layout] Call app.use(VueRouterLayout) before using the layout component.'
+  it('hooks errors while loading a lazy component', async () => {
+    const Test1 = {
+      layout: 'foo',
+      template: '<p>Test1</p>',
+    }
+
+    const Test2 = () => {
+      return new Promise((_, reject) => {
+        reject(new Error('Test'))
+      })
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Test1,
+      },
+      {
+        path: 'test',
+        component: Test2,
+      },
+    ])
+
+    const onError = jest.fn()
+    wrapper.vm.$router.onError(onError)
+
+    await wrapper.vm.$nextTick()
+    await expect(wrapper.vm.$router.push('/test')).rejects.toEqual(
+      new Error('Test')
     )
+
+    expect(wrapper.html()).toMatchSnapshot()
+    expect(onError).toHaveBeenCalledWith(new Error('Test'))
+  })
+
+  it('hooks errors while loading a layout', async () => {
+    const Test1 = {
+      layout: 'foo',
+      template: '<p>Test1</p>',
+    }
+
+    const Test2 = {
+      layout: 'error',
+      template: '<p>Test2</p>',
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Test1,
+      },
+      {
+        path: 'error',
+        component: Test2,
+      },
+    ])
+
+    const onError = jest.fn()
+    wrapper.vm.$router.onError(onError)
+
+    await wrapper.vm.$nextTick()
+    await expect(wrapper.vm.$router.push('/error')).rejects.toEqual(
+      new Error('Not found layout: error')
+    )
+
+    expect(wrapper.html()).toMatchSnapshot()
+    expect(onError).toHaveBeenCalledWith(new Error('Not found layout: error'))
   })
 })
