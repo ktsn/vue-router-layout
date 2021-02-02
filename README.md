@@ -16,22 +16,7 @@ $ npm install vue-router-layout
 
 ## Overview
 
-First of all, install vue-router-layout plugin to your Vue app instance.
-
-```js
-import { createApp } from 'vue'
-import VueRouterLayout from 'vue-router-layout'
-import App from './App.vue'
-
-const app = createApp(App)
-
-// Install vue-router-layout
-app.use(VueRouterLayout)
-
-app.mount('#app')
-```
-
-Then, create `<RouterLayout>` component by passing a callback which resolves layout component to `createRouterLayout`. The callback will receives a string of layout type and expect returning a promise resolves a layout component.
+Create `<RouterLayout>` component by passing a callback which resolves layout component to `createRouterLayout`. The callback will receives a string of layout type and expect returning a promise resolves a layout component.
 
 ```js
 import { createRouterLayout } from 'vue-router-layout'
