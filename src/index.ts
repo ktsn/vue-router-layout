@@ -8,13 +8,36 @@ import {
 } from 'vue'
 import { RouteRecord, RouteLocationNormalized } from 'vue-router'
 
+type Layout = { name: string; props: Record<string, unknown> }
+type Optional<Object, Key extends keyof Object> = Omit<Object, Key> &
+  Partial<Pick<Object, Key>>
+
+function normalizeLayout(layout: any): Layout {
+  if (typeof layout === 'string') {
+    return {
+      name: layout,
+      props: {},
+    }
+  }
+
+  if (layout && typeof layout === 'object' && 'name' in layout) {
+    return {
+      name: layout.name,
+      props: layout?.props || {},
+    }
+  }
+
+  throw new Error(
+    `[vue-router-layout] Incorrect value for the 'layout' property.`
+  )
+}
+
 /**
  * Find which layout the component should render.
  * If the component is not specified layout name, `default` is used.
  * Otherwise return undefined.
  */
-function resolveLayoutName(matched: RouteRecord[]): string | undefined {
-  const defaultName = 'default'
+function resolveLayout(matched: RouteRecord[]): Layout | undefined {
   const last = matched[matched.length - 1]
   if (!last) {
     return
@@ -30,25 +53,30 @@ function resolveLayoutName(matched: RouteRecord[]): string | undefined {
     return
   }
 
-  return getLayoutName(Component) || defaultName
+  const defaultLayout: Layout = { name: 'default', props: {} }
+
+  return getLayout(Component) || defaultLayout
 }
 
-function getLayoutName(
+function getLayout(
   Component: any /* ComponentOptions | VueConstructor */
-): string | undefined {
+): Layout | undefined {
   const isCtor = typeof Component === 'function' && Component.options
   const options = isCtor ? Component.options : Component
 
   if (options.layout) {
-    return options.layout
-  } else {
-    // Retrieve super component and mixins
-    const mixins: any[] = (options.mixins || []).slice().reverse()
-    const extend: any = options.extends || []
+    return normalizeLayout(options.layout)
+  }
 
-    return mixins.concat(extend).reduce<string | undefined>((acc, c) => {
-      return acc || getLayoutName(c)
-    }, undefined)
+  // Retrieve super component and mixins
+  const mixins: any[] = (options.mixins || []).slice().reverse()
+  const extend: any = options.extends || []
+
+  for (const c of mixins.concat(extend)) {
+    const layout = getLayout(c)
+    if (layout) {
+      return layout
+    }
   }
 }
 
@@ -85,7 +113,7 @@ function normalizeEsModuleComponent(
 
 function install() {
   console.info(
-    '[vue-router-layout] app.use(VueRouterLayout) is no longer needed. You can sefely remove it.'
+    '[vue-router-layout] app.use(VueRouterLayout) is no longer needed. You can safely remove it.'
   )
 }
 
@@ -97,7 +125,7 @@ export function createRouterLayout(
 
     data() {
       return {
-        layoutName: undefined as string | undefined,
+        layout: undefined as Layout | undefined,
         layouts: shallowReactive(
           Object.create(null) as Record<string, Component>
         ),
@@ -107,15 +135,15 @@ export function createRouterLayout(
     async beforeRouteEnter(to, _from, next) {
       await loadAsyncComponents(to)
 
-      const name = resolveLayoutName(to.matched)
-      const layoutComp = name
-        ? normalizeEsModuleComponent(await resolve(name))
+      const layout = resolveLayout(to.matched)
+      const layoutComp = layout
+        ? normalizeEsModuleComponent(await resolve(layout.name))
         : undefined
 
       next((vm: any) => {
-        vm.layoutName = name
-        if (name && layoutComp) {
-          vm.layouts[name] = layoutComp
+        vm.layout = layout
+        if (layout && layoutComp) {
+          vm.layouts[layout.name] = layoutComp
         }
       })
     },
@@ -124,25 +152,29 @@ export function createRouterLayout(
       try {
         await loadAsyncComponents(to)
 
-        const name = resolveLayoutName(to.matched) || this.layoutName
-        if (name && !this.layouts[name]) {
-          this.layouts[name] = normalizeEsModuleComponent(await resolve(name))
+        const layout = resolveLayout(to.matched) || this.layout
+        if (layout && !this.layouts[layout.name]) {
+          this.layouts[layout.name] = normalizeEsModuleComponent(
+            await resolve(layout.name)
+          )
         }
 
-        this.layoutName = name
+        this.layout = layout
         next()
       } catch (error) {
         next(error)
       }
     },
 
-    render(): VNode {
-      const layout = this.layoutName && this.layouts[this.layoutName]
-      if (!layout) {
-        return h('span')
+    render(): VNode | null {
+      const layoutComponent = this.layout && this.layouts[this.layout.name]
+      if (!layoutComponent) {
+        return null
       }
-      return h(layout as ConcreteComponent, {
-        key: this.layoutName,
+
+      return h(layoutComponent as ConcreteComponent, {
+        key: this.layout!.name,
+        ...this.layout!.props,
       })
     },
   })
@@ -154,6 +186,6 @@ export default {
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomOptions {
-    layout?: string
+    layout?: string | Optional<Layout, 'props'>
   }
 }
