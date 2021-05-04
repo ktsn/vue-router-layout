@@ -13,7 +13,13 @@ const layouts: Record<string, Component> = {
   },
 
   bar: {
-    template: '<div>Bar <router-view/></div>',
+    template: '<div>Bar {{ title }}<router-view/></div>',
+    props: {
+      title: {
+        type: String,
+        default: '',
+      },
+    },
   },
 }
 
@@ -46,10 +52,9 @@ async function mount(children: RouteRecordRaw[]) {
       plugins: [router],
     },
   })
+
   await router.push('/')
-  await wrapper.vm.$nextTick()
-  await wrapper.vm.$nextTick()
-  await wrapper.vm.$nextTick()
+
   return wrapper
 }
 
@@ -405,5 +410,26 @@ describe('RouterLayout component', () => {
 
     expect(wrapper.html()).toMatchSnapshot()
     expect(onError).toHaveBeenCalledWith(new Error('Not found layout: error'))
+  })
+
+  it('passes props to layout component', async () => {
+    const TestComponent = {
+      template: `<p>Test</p>`,
+      layout: {
+        name: 'bar',
+        props: {
+          title: 'hello',
+        },
+      },
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: TestComponent,
+      },
+    ])
+
+    expect(wrapper.html()).toMatchSnapshot()
   })
 })

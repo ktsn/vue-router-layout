@@ -68,10 +68,19 @@ With the above router, if you have `layouts/foo.vue` and `pages/index.vue` like 
 <!-- layouts/foo.vue -->
 <template>
   <div>
-    <h1>Foo Layout</h1>
+    <h1>{{ title }} Foo Layout</h1>
     <router-view/>
   </div>
 </template>
+
+<script>
+export default {
+  props: {
+    type: String,
+    default: 'Hello',
+  }
+}
+</script>
 ```
 
 ```vue
@@ -82,8 +91,15 @@ With the above router, if you have `layouts/foo.vue` and `pages/index.vue` like 
 
 <script>
 export default {
-  // You can specify layout component name here (default value is 'default')
-  layout: 'foo'
+  // Specify the layout by either an object or a string. 
+  // The default value is 'default'.
+  layout: {
+    name: 'foo',
+    props: {
+      title: 'Hi'
+    }
+  }
+  // or just `layout: 'foo'` if the layout component doesn't have any props.
 }
 </script>
 ```
@@ -92,7 +108,7 @@ The following html will be rendered when you access `/` route:
 
 ```html
 <div>
-  <h1>Foo Layout</h1>
+  <h1>Hi Foo Layout</h1>
   <p>index.vue</p>
 </div>
 ```
