@@ -1,6 +1,6 @@
 {
   "name": "vue-router-layout",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": "katashin",
   "description": "Lightweight layout selector for Vue Router",
   "keywords": [
