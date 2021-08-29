@@ -168,7 +168,12 @@ export function createRouterLayout(
 
     render(): VNode | null {
       const layoutComponent = this.layout && this.layouts[this.layout.name]
-      if (!layoutComponent) {
+      const currentLayout = resolveLayout(this.$route.matched)
+
+      if (
+        !layoutComponent ||
+        (currentLayout && this.layout?.name !== currentLayout.name)
+      ) {
         return null
       }
 
