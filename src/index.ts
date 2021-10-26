@@ -20,9 +20,9 @@ function normalizeLayout(layout: any): Layout {
     }
   }
 
-  if (layout && typeof layout === 'object' && 'name' in layout) {
+  if (layout && typeof layout === 'object') {
     return {
-      name: layout.name,
+      name: layout?.name || 'default',
       props: layout?.props || {},
     }
   }
