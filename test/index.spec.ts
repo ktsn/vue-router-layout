@@ -432,4 +432,38 @@ describe('RouterLayout component', () => {
 
     expect(wrapper.html()).toMatchSnapshot()
   })
+
+  it('Created hook in page component should not be called when layout changes', async (done) => {
+    const created = jest.fn()
+
+    const Test1 = {
+      layout: 'foo',
+      template: '<p>Test1</p>',
+      created,
+    }
+
+    const Test2 = {
+      layout: 'bar',
+      template: '<p>Test2</p>',
+    }
+
+    const wrapper = await mount([
+      {
+        path: '',
+        component: Test1,
+      },
+      {
+        path: 'test',
+        component: Test2,
+      },
+    ])
+
+    wrapper.vm.$router.push('/test')
+
+    setTimeout(() => {
+      // Should be called only once when initiating.
+      expect(created).toHaveBeenCalledTimes(1)
+      done()
+    }, 200)
+  })
 })
