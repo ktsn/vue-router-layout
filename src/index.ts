@@ -9,8 +9,6 @@ import {
 import { RouteRecord, RouteLocationNormalized } from 'vue-router'
 
 type Layout = { name: string; props: Record<string, unknown> }
-type Optional<Object, Key extends keyof Object> = Omit<Object, Key> &
-  Partial<Pick<Object, Key>>
 
 function normalizeLayout(layout: any): Layout {
   if (typeof layout === 'string') {
@@ -20,9 +18,9 @@ function normalizeLayout(layout: any): Layout {
     }
   }
 
-  if (layout && typeof layout === 'object' && 'name' in layout) {
+  if (layout && typeof layout === 'object') {
     return {
-      name: layout.name,
+      name: layout?.name || 'default',
       props: layout?.props || {},
     }
   }
@@ -191,6 +189,6 @@ export default {
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomOptions {
-    layout?: string | Optional<Layout, 'props'>
+    layout?: string | Partial<Layout>
   }
 }
